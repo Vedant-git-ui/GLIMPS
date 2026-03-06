@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glimps | by Vedant</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800&family=Lora:wght@700&family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="bg-loop"></div>
+
+    <header>
+        <div class="header-left" onclick="toggleSignup()">
+            <div class="profile-avatar">👤</div>
+            <span id="userName">SIGN UP</span>
+        </div>
+        
+        <div class="logo-container">
+            <h1 id="mainLogo">Glimps</h1>
+            <p id="subLogo">by Vedant</p>
+        </div>
+
+        <div class="date-display" id="dateDisplay"></div>
+    </header>
+
+    <nav class="filter-bar">
+        <button class="nav-btn" onclick="fetchNews('world')">WORLD</button>
+        <button class="nav-btn" onclick="fetchNews('india')">INDIA</button>
+        <button class="nav-btn" onclick="openStateList()"><span id="currentState">STATE</span> ▾</button>
+    </nav>
+
+    <div id="newsFeed"></div>
+
+    <div id="signupModal" class="overlay">
+        <div class="modal-content animate-pop">
+            <h2 class="ui-bold">JOIN GLIMPS</h2>
+            <div class="input-group">
+                <input type="text" id="inputName" placeholder="Full Name">
+                <input type="email" id="inputEmail" placeholder="Email Address">
+            </div>
+            
+            <div class="login-options">
+                <button class="normal-btn" onclick="saveUser(false)">FREE LOGIN</button>
+                <div class="divider">OR</div>
+                <button class="gold-btn animate-glow" onclick="triggerUPI()">GOLD STATUS — ₹9</button>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="close-link" onclick="toggleSignup()">LATER</button>
+                <button id="logoutBtn" onclick="logout()" style="display:none; color:#ff4444; background:none; border:none; font-weight:700; margin-top:15px; width:100%;">LOGOUT</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="stateOverlay" class="overlay" onclick="closeStateList()">
+        <div class="overlay-content" onclick="event.stopPropagation()">
+            <h3 class="ui-bold">SELECT STATE</h3>
+            <ul id="stateList"></ul>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
