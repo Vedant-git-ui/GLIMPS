@@ -1,105 +1,104 @@
-// Glimps Final Script - Powered by GNews
-const GNEWS_KEY = "9922daf5f9eb12b2befd1de4c6eb19dd"; 
-const states = ["Odisha", "Maharashtra", "Delhi", "Bihar", "Karnataka", "Punjab", "West Bengal", "Tamil Nadu", "Gujarat", "Kerala", "Assam", "Rajasthan"];
+// Glimps | Final Clean Production Script
+const API_KEY = "pub_7ab94bdc84bf42958f75f00361a5f234"; 
+const states = ["Odisha", "Maharashtra", "Delhi", "Bihar", "Karnataka", "Punjab", "West Bengal", "Tamil Nadu", "Gujarat", "Kerala"];
 
 function init() {
     updateDate();
     checkSession();
-    fetchNews('india'); // Default load on startup
+    fetchNews('india'); 
 }
 
-// 1. Memory Logic (LocalStorage)
 function checkSession() {
     const name = localStorage.getItem('glimpsUser');
     const gold = localStorage.getItem('glimpsGold') === 'true';
     const userDisplay = document.getElementById('userName');
-    const logoutBtn = document.getElementById('logoutBtn');
-
-    if(name) {
+    if(name && userDisplay) {
         userDisplay.innerText = name.toUpperCase();
-        logoutBtn.style.display = 'block';
         if(gold) userDisplay.classList.add('gold-user');
-        else userDisplay.classList.remove('gold-user');
-    } else {
-        userDisplay.innerText = "SIGN UP";
-        userDisplay.classList.remove('gold-user');
-        logoutBtn.style.display = 'none';
     }
 }
 
 function updateDate() {
     const options = { weekday: 'short', month: 'short', day: 'numeric' };
-    document.getElementById('dateDisplay').innerText = new Date().toLocaleDateString('en-IN', options);
+    const dateEl = document.getElementById('dateDisplay');
+    if(dateEl) dateEl.innerText = new Date().toLocaleDateString('en-IN', options);
 }
 
-// 2. The GNews Fetch (Works on Live Links)
+// THE NEWS ENGINE
 async function fetchNews(category) {
     const feed = document.getElementById('newsFeed');
-    feed.innerHTML = "<p style='text-align:center; padding:50px; opacity:0.5;'>Scanning Horizons...</p>";
+    feed.innerHTML = "<div class='shimmer'>SYNCING GLIMPS...</div>";
     
-    // GNews Search Logic
-    let query = category === 'india' ? 'India' : category;
-    // Using GNews v4 Search Endpoint
-    let url = `https://gnews.io/api/v4/search?q=${query}&lang=en&country=in&max=15&apikey=${GNEWS_KEY}`;
+    let url = `https://newsdata.io/api/1/latest?apikey=${API_KEY}`;
+    if (category === 'world') url += `&language=en`; 
+    else if (category === 'india') url += `&country=in&language=en`; 
+    else url += `&q=${category}&language=en`; 
 
     try {
         const res = await fetch(url);
         const data = await res.json();
-        
-        if(!data.articles || data.articles.length === 0) {
-            feed.innerHTML = "<p style='text-align:center; padding:50px;'>No headlines found. GNews daily limit might be reached.</p>";
+
+        if (data.status === "error") throw new Error("Limit Reached");
+        if (!data.results || data.results.length === 0) {
+            feed.innerHTML = "<p class='error'>No Glimps found for this region.</p>";
             return;
         }
 
-        feed.innerHTML = "";
-        data.articles.forEach((art, i) => {
+        feed.innerHTML = ""; 
+        
+        data.results.forEach((art, i) => {
             const div = document.createElement('div');
             div.className = 'headline-item';
-            // Staggered entrance: each headline slides up 0.1s after the previous one
-            div.style.animationDelay = `${i * 0.1}s`; 
-            div.innerHTML = `<div style="font-family:'Lora', serif; font-weight:700;">${art.title}</div>`;
-            div.onclick = () => window.open(art.url, '_blank');
+            div.style.animationDelay = `${i * 0.1}s`;
+            
+            // Image is inside the 'expanded' div so it stays hidden initially
+            const img = art.image_url ? `<img src="${art.image_url}" class="news-img">` : "";
+            const source = art.source_id ? art.source_id.toUpperCase() : "NEWS";
+
+            div.innerHTML = `
+                <div class="meta-row">
+                    <span class="tag">${source}</span>
+                    <span class="time">${new Date(art.pubDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                </div>
+                <div class="title">${art.title}</div>
+                <div class="expanded" style="display: none;"> ${img}
+                    <p style="margin: 15px 0; line-height: 1.5; opacity: 0.8;">${art.description || "Reading deep into the story..."}</p>
+                    <a href="${art.link}" target="_blank" class="read-btn">READ FULL STORY</a>
+                </div>
+            `;
+            
+            div.onclick = (e) => {
+                if(e.target.tagName === 'A') return;
+                const expand = div.querySelector('.expanded');
+                const isCurrentlyVisible = expand.style.display === 'block';
+                
+                // Close all other open headlines first
+                document.querySelectorAll('.expanded').forEach(el => el.style.display = 'none');
+                
+                // Toggle this one
+                expand.style.display = isCurrentlyVisible ? 'none' : 'block';
+            };
             feed.appendChild(div);
         });
     } catch (e) {
-        console.error(e);
-        feed.innerHTML = "<p style='text-align:center; padding:50px;'>Error syncing with GNews. Check internet.</p>";
+        feed.innerHTML = "<p class='error'>OFFLINE: API QUOTA REACHED</p>";
     }
 }
 
-// 3. Signup & Payment Logic
-function saveUser(isGold) {
-    const name = document.getElementById('inputName').value;
-    const email = document.getElementById('inputEmail').value;
-    if(!name || !email) return alert("Please fill all details");
-    
-    localStorage.setItem('glimpsUser', name);
-    localStorage.setItem('glimpsGold', isGold ? 'true' : 'false');
-    
-    if(isGold) {
-        alert("Opening UPI... If you are on Desktop, please complete the payment on your mobile app to activate Gold Glow.");
-        // Your Verified UPI ID
-        window.location.href = `upi://pay?pa=vedantvamsi38@okaxis&pn=GlimpsGold&am=9&cu=INR&tn=GlimpsGoldStatus`;
-    }
-    
-    setTimeout(() => {
-        checkSession();
-        toggleSignup();
-    }, 1500);
-}
-
-function triggerUPI() { saveUser(true); }
-
-function logout() {
-    localStorage.clear();
-    checkSession();
-    toggleSignup();
-}
-
-// 4. UI Controls
+// UI HANDLERS
 function toggleSignup() {
     const m = document.getElementById('signupModal');
-    m.style.display = m.style.display === 'flex' ? 'none' : 'flex';
+    m.style.display = (m.style.display === 'flex') ? 'none' : 'flex';
+}
+
+function triggerUPI() {
+    const name = document.getElementById('inputName').value;
+    const email = document.getElementById('inputEmail').value;
+    if(!name || !email) return alert("Details required!");
+    localStorage.setItem('glimpsUser', name);
+    localStorage.setItem('glimpsGold', 'true');
+    window.location.href = `upi://pay?pa=vedantvamsi38@okaxis&pn=GlimpsGold&am=9&cu=INR`;
+    setTimeout(() => location.reload(), 2000);
 }
 
 function openStateList() {
@@ -108,17 +107,16 @@ function openStateList() {
     states.forEach(s => {
         const li = document.createElement('li');
         li.innerText = s.toUpperCase();
-        li.style.padding = "20px";
-        li.style.borderBottom = "1px solid rgba(255,255,255,0.05)";
-        li.style.fontWeight = "800";
-        li.onclick = () => { fetchNews(s); closeStateList(); };
+        li.style.padding = "15px";
+        li.onclick = () => { 
+            fetchNews(s); 
+            document.getElementById('stateOverlay').style.display='none'; 
+            document.getElementById('currentState').innerText = s.toUpperCase();
+        };
         list.appendChild(li);
     });
     document.getElementById('stateOverlay').style.display = 'flex';
 }
 
-function closeStateList() { 
-    document.getElementById('stateOverlay').style.display = 'none'; 
-}
-
 window.onload = init;
+
