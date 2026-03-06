@@ -63,3 +63,26 @@ input { width: 100%; padding: 14px; margin: 8px 0; background: #1a1a1a; border: 
 .gold-btn { width: 100%; padding: 15px; background: var(--gold); color: #000; border: none; border-radius: 12px; font-weight: 800; margin-top: 10px; }
 .divider { margin: 15px 0; opacity: 0.4; font-size: 0.8rem; font-weight: 700; }
 .close-link { background: none; border: none; color: #fff; opacity: 0.5; margin-top: 20px; font-weight: 700; }
+
+
+.source-tag { font-size: 0.6rem; color: var(--gold); background: rgba(255,215,0,0.1); padding: 2px 6px; border-radius: 4px; font-weight: 800; }
+.time-tag { font-size: 0.6rem; opacity: 0.4; margin-left: 10px; }
+.news-img { width: 100%; border-radius: 8px; margin: 10px 0; border: 1px solid var(--glass-border); }
+.error-msg { text-align: center; padding: 40px; opacity: 0.5; font-size: 0.8rem; }
+.loading-shimmer { text-align: center; padding: 50px; font-weight: 800; letter-spacing: 2px; animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+
+
+.expanded {
+    overflow: hidden;
+    transition: all 0.4s ease;
+}
+
+.news-img {
+    width: 100%;
+    max-height: 250px;
+    object-fit: cover; /* Prevents images from looking stretched */
+    border-radius: 12px;
+    margin-top: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
